@@ -1,7 +1,21 @@
-import ballerina/io;
+import ballerina/http;
 import ballerina/os;
+import ballerina/io;
 
-public function main() {
-    io:println("Hello, World!");
-    os:Process|os:Error result = os:exec({value: "python3", arguments: ["test.py"]});
+service /testBal on new http:Listener(9090) {
+    resource function get testBal() returns string|os:Error|error {
+        os:Process result = check os:exec({
+            value: "python3",
+            arguments: ["test.py"]
+        });
+
+        int status = check result.waitForExit();
+        io:println(string `Process exit with status: ${status}`);
+
+        byte[] output = check result.output(io:stdout);
+        io:println(check string:fromBytes(output));
+
+        return "d!";
+    }
 }
+
